@@ -1,4 +1,4 @@
-Reproducible-Researchs **[Rpubs](http://rpubs.com/phobos/assignmentRR)**
+Reproducible-Researchs 
 ======================
 ### See in **[Rpubs](http://rpubs.com/phobos/assignmentRR)**
 Analysis of NOAA storm data for Coursera John Hopkins course on Reproducible Research - Project 2.  
