@@ -194,5 +194,5 @@ head(healthState)
 
 ### Results
 According to the data (5% of the data of 2011),  demonstrated among these types of weather disaster per number of case, TORNADO (5826), EXCESSIVE HEAT (674) and THUNDER STORM WIND (344) are most dangerous for public health.   
-the types of disasters that have caused more damage and property loss in dollars are TORNADO (7.6133725\times 10^{9}), FLOOD (7.5900865\times 10^{9}) and FLASH FLOOD (1.304683\times 10^{9}). While FLOOD (1.5137\times 10^{8}), THUNDER STORM WIND (1.39216\times 10^{8}) and ICESTORM (8.8323\times 10^{7}) bring most corp damage. 
+the types of disasters that have caused more damage and property loss in dollars are TORNADO (7.6133725\times 10^{9}), FLOOD (7.5900865\times 10^{9}) and FLASH FLOOD (1.304683 10^9). While FLOOD (1.5137 10^8), THUNDER STORM WIND (1.39216 10^8) and ICESTORM (8.8323 10^7) bring most corp damage. 
 In the aspect of geographic classification, ALABAMA (2139) is the most vulnerable targets for bad weather events. 
