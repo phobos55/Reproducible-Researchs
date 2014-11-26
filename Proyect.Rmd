@@ -1,0 +1,123 @@
+---
+output:
+  html_document: 
+    keep_md: yes
+---
+
+National Oceanic and Atmospheric Administration's Storm Database Analysis
+===============
+
+### Sysnopsis
+The U.S. National Oceanic and Atmospheric Administration's (**NOAA**) storm database was used to compare outcomes from storm and severe weather event categories. Analyzed data are from 1993--2011. Outcomes analyzed are the number of fatalities and injuries and the dollar amount of property damage. Event categories are convective, extreme temperature, flood, winter, and other.
+
+Estimates of fatalities, injuries, property and crop damage were used to provide assistance with which types of event are most harmful to the population health and what the economic impact might be.
+
+### Read and Processing Data
+- Read data
+```{r}
+data1 <- read.csv(bzfile("StormData.csv.bz2"))
+str(data1)
+```
+The data you have **`r dim(data1)[2]`** columns and **`r dim(data1)[1]`** rows.   
+- Creating subsets of data for better management. 5% of the most recent data was used for reasons of system
+```{r}
+storm<-data1[857183:902297,]
+rm(data1)
+```
+
+### Analysis   
+##### Across the United States, which types of events (as indicated in the **EVTYPE** variable) are most harmful with respect to population health?
+- Create news variables for our analysis
+```{r}
+fatalities <- aggregate(storm$FATALITIES, list(storm$EVTYPE), sum)
+injuries <- aggregate(storm$INJURIES, list(storm$EVTYPE), sum)
+health <- merge(fatalities, injuries, by="Group.1")
+health[,4] <- health[,2] + health[,3]
+colnames(health) <- c("type", "fatalities", "injuries", "total")
+healthtop <- health[order(health$total, decreasing=TRUE),][1:10,]
+```
+
+- Plotted the number of cases for each event
+```{r}
+library(reshape2)
+healthtop_1 <- melt(healthtop, id.vars="type")
+library(ggplot2)
+ggplot(healthtop_1, aes(x = reorder(type, -value), y = value)) + 
+     geom_bar(stat = "identity", aes(fill = variable), position = "dodge") + 
+     scale_fill_brewer("Number of Cases") + xlab("Event Type") + ylab("Number of Cases") + 
+     theme_bw() + theme(axis.text.x = element_text(angle = 30, hjust=1)) + 
+     ggtitle("Health Threat Events")
+```
+
+##### Across the United States, which types of events have the greatest economic consequences?
+- Examining the data and According to the National Weather Service Storm Data Documentation:
+"K"/ "k" stand for thousand
+"M"/ "m" stand for million
+"B"/ "b" stand for billion
+```{r}
+unique(storm$CROPDMGEXP)
+unique(storm$PROPDMGEXP)
+```
+- Creates a new data frame called **economy**
+```{r}
+economy <- storm[,c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG","CROPDMGEXP")]
+index1 <- which(economy$PROPDMGEXP%in%c("K","k"))
+index2 <- which(economy$PROPDMGEXP%in%c("M","m"))
+index3 <- which(economy$PROPDMGEXP%in%c("B","b"))
+
+economy[,2][index1] <- economy[,2][index1]*(10^3)
+economy[,2][index2] <- economy[,2][index2]*(10^6)
+economy[,2][index3] <- economy[,2][index3]*(10^9)
+
+index4 <- which(economy$CROPDMGEXP%in%c("K","k"))
+index5 <- which(economy$CROPDMGEXP%in%c("M","m"))
+index6 <- which(economy$CROPDMGEXP%in%c("B","b"))
+
+economy[,4][index4] <- economy[,4][index4]*(10^3)
+economy[,4][index5] <- economy[,4][index5]*(10^6)
+economy[,4][index6] <- economy[,4][index6]*(10^9)
+```
+- Creates a new data frame called **propertydmgs** and **corpdmgs**
+```{r}
+propertydmgs <- aggregate(economy$PROPDMG, list(economy$EVTYPE), sum)
+corpdmgs <- aggregate(economy$CROPDMG, list(economy$EVTYPE), sum)
+colnames(propertydmgs) <- c("type", "propertydmgs")
+colnames(corpdmgs) <- c("type", "corpdmgs")
+
+propertydmgs <- propertydmgs[order(propertydmgs$propertydmgs, decreasing=TRUE),][1:10,]
+corpdmgs <- corpdmgs[order(corpdmgs$corpdmgs, decreasing=TRUE),][1:10,]
+```
+- Plotted the data Property Damage (Dollar) for each event type.
+```{r}
+ggplot(propertydmgs, aes(x=reorder(type, -propertydmgs), y=propertydmgs)) + 
+    geom_bar(stat = "identity",  position = "dodge") + 
+    scale_fill_brewer("Property Damage(US Dollar)") + xlab("Event Type") + theme_bw() +
+    ylab("Property Damage (Dollar)") + theme(axis.text.x = element_text(angle = 30, hjust=1)) + 
+    ggtitle("Top 10 Property Threat Events")
+```
+
+- Plotted the data Property Damage (Dollar) for each event type.
+```{r}
+ggplot(corpdmgs, aes(x=reorder(type, -corpdmgs), y=corpdmgs)) + 
+    geom_bar(stat = "identity",  position = "dodge") + 
+    scale_fill_brewer("Corp Damage(US Dollar)") + xlab("Event Type") + 
+    ylab("Corp Damage (Dollar)") + theme_bw() +
+    theme(axis.text.x = element_text(angle = 30, hjust=1)) + 
+    ggtitle("Top 10 Corp Threat Events")
+```
+
+- Part of US suffer most from the weather disaster
+```{r}
+healthState <- storm[,c("STATE", "FATALITIES", "INJURIES")]
+healthState[,4] <- healthState[,2] + healthState[,3]
+colnames(healthState)[4] <- "TOTAL"
+healthState_1 <- aggregate(healthState$TOTAL, list(healthState$STATE), sum)
+colnames(healthState_1) <- c("STATE", "VALUE")
+healthState<-healthState_1[order(healthState_1$VALUE,decreasing = TRUE),]
+head(healthState)
+```
+
+### Results
+According to the data (5% of the data of 2011),  demonstrated among these types of weather disaster per number of case, TORNADO (`r healthtop_1[21,3]`), EXCESSIVE HEAT (`r healthtop_1[22,3]`) and THUNDER STORM WIND (`r healthtop_1[23,3]`) are most dangerous for public health.   
+the types of disasters that have caused more damage and property loss in dollars are TORNADO (`r propertydmgs[1,2]`), FLOOD (`r propertydmgs[2,2]`) and FLASH FLOOD (`r propertydmgs[3,2]`). While FLOOD (`r corpdmgs[1,2]`), THUNDER STORM WIND (`r corpdmgs[2,2]`) and ICESTORM (`r corpdmgs[3,2]`) bring most corp damage. 
+In the aspect of geographic classification, ALABAMA (`r healthState[1,2]`) is the most vulnerable targets for bad weather events. 
